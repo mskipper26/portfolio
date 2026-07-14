@@ -12,7 +12,7 @@ const { escapeHtml } = require("../../build/util");
  */
 module.exports = function seriesModal(o) {
   return `<div
-        class="series-modal"
+        class="modal series-modal"
         id="series-modal"
         role="dialog"
         aria-modal="true"
@@ -22,14 +22,14 @@ module.exports = function seriesModal(o) {
         data-series-key="${escapeHtml(o.seriesKey)}"
         hidden
       >
-        <div class="series-modal__overlay" data-modal-dismiss></div>
-        <div class="series-modal__card" role="document">
+        <div class="modal__overlay" data-modal-dismiss></div>
+        <div class="modal__card" role="document">
           <p class="eyebrow">${escapeHtml(o.seriesName)}</p>
-          <h2 class="series-modal__title" id="series-modal-title">You're mid-series</h2>
-          <p class="series-modal__desc" id="series-modal-desc">
+          <h2 class="modal__title" id="series-modal-title">You're mid-series</h2>
+          <p class="modal__desc" id="series-modal-desc">
             You're jumping into the middle of a series. Want to start from the beginning?
           </p>
-          <div class="series-modal__actions">
+          <div class="modal__actions">
             <a class="btn btn--primary" href="${escapeHtml(o.firstUrl)}">Go to Part 1</a>
             <button type="button" class="btn btn--outline" data-modal-dismiss>Continue here</button>
           </div>

@@ -3,6 +3,7 @@
 
 const { escapeHtml, formatLongDate } = require("../build/util");
 const thumb = require("./partials/thumb");
+const comments = require("./partials/comments");
 
 /**
  * @param {object} o
@@ -14,6 +15,8 @@ const thumb = require("./partials/thumb");
  * @param {?string} o.prevUrl
  * @param {?string} o.nextUrl
  * @param {string} o.modalHtml series modal markup ("" if not applicable)
+ * @param {object} o.site      site.config (for the comments section)
+ * @param {string} o.threadId  page URL path, used as the comment thread key
  */
 module.exports = function blogPost(o) {
   const p = o.part;
@@ -60,6 +63,7 @@ module.exports = function blogPost(o) {
           ${p.html}
         </article>
         ${seriesNav}
+        ${comments({ site: o.site, threadId: o.threadId })}
       </div>
       ${o.modalHtml || ""}
     </main>`;

@@ -1,0 +1,13 @@
+{
+  "name": "portfolio-comment-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal comment API for the portfolio template — Node http + Postgres.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  }
+}

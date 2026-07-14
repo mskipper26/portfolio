@@ -83,6 +83,11 @@ function render(model, site, root) {
     }
   }
 
+  // Comments are gated on site.config; when enabled, detail pages load the
+  // client behavior and each carries its own thread keyed by its URL path.
+  const commentsEnabled = !!(site.comments && site.comments.enabled);
+  const commentScripts = commentsEnabled ? ["/assets/comments.js"] : [];
+
   // --- Project detail pages ------------------------------------------------
   for (const e of model.projects) {
     pages.push({
@@ -92,7 +97,8 @@ function render(model, site, root) {
         description: e.description,
         url: e.url,
         bodyClass: "project-detail",
-        main: projectDetailTpl({ entry: e }),
+        scripts: commentScripts,
+        main: projectDetailTpl({ entry: e, site }),
       }),
     });
   }
@@ -128,7 +134,10 @@ function render(model, site, root) {
           description: p.description,
           url: outUrl,
           bodyClass: "blog-post",
-          scripts: showModal ? ["/assets/modal.js"] : [],
+          scripts: [
+            ...(showModal ? ["/assets/modal.js"] : []),
+            ...commentScripts,
+          ],
           main: blogPostTpl({
             entry: e,
             part: p,
@@ -141,6 +150,8 @@ function render(model, site, root) {
             prevUrl: prev,
             nextUrl: next,
             modalHtml,
+            site,
+            threadId: outUrl,
           }),
         }),
       });

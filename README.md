@@ -92,17 +92,77 @@ with an example systemd user unit at `deploy/portfolio.service`.
 node build.js && node server.js
 ```
 
+## Comments (optional)
+
+Project detail pages and individual blog pages can host a reader comment section
+(name ≤ 25 chars, comment ≤ 200 chars, per-page threads, hover-to-delete via a
+styled key dialog). It's **off by default** so the template builds with zero
+backend. Enabling it adds a small backend: a **Postgres** database and a **Node
+comment API**, both run via **Docker Compose**. The static site stays static —
+comments load client-side and degrade gracefully to "unavailable" if the API is
+down. Submissions are screened server-side against a profanity blocklist
+(`api/banned-words.txt` — edit it and `docker compose restart api` to adjust).
+
+**1. Configure secrets** (in your gitignored `.env`):
+
+```bash
+cp .env.example .env    # then set POSTGRES_PASSWORD and COMMENT_DELETE_KEY
+```
+
+`COMMENT_DELETE_KEY` is the key a visitor must type to delete a comment.
+
+**2. Start the backend:**
+
+```bash
+docker compose up -d          # brings up Postgres + the API
+docker compose ps             # both services should be healthy
+curl http://127.0.0.1:8138/api/health   # -> {"ok":true}
+```
+
+The API is published on **loopback only** (`127.0.0.1:8138`); Postgres has no
+published port. Data persists in the `pgdata` Docker volume.
+
+**3. Turn comments on** in your `site.config.js`:
+
+```js
+comments: { enabled: true, apiBase: "/api" },
+```
+
+Then rebuild (`npm run build`).
+
+**4. Expose the API through your proxy/tunnel.** The static server (`:8137`) and
+the comment API (`:8138`) are two loopback services. The API accepts its routes
+with **or without** a leading `/api`, so no path rewrite is ever needed. Pick one:
+
+- **Same-origin path** (`apiBase: "/api"`, no CORS) — route `/api/` to the API:
+
+  ```nginx
+  location /api/ { proxy_pass http://127.0.0.1:8138; }
+  location /     { proxy_pass http://127.0.0.1:8137; }
+  ```
+
+- **Dedicated subdomain** (e.g. Cloudflare Tunnel) — add a public hostname
+  `api.<your-domain>` → `http://localhost:8138` with **Path left blank**, then:
+  1. set `ALLOW_ORIGIN=https://<your-domain>` in `.env` and re-run
+     `docker compose up -d` (cross-origin needs CORS), and
+  2. set `apiBase: "https://api.<your-domain>"` in `site.config.js` and rebuild.
+
+Verify: `curl https://<your-domain>/api/health` (or
+`curl https://api.<your-domain>/health`) → `{"ok":true}`.
+
 ## Project layout
 
 ```
-build/        build logic (collect, parse, render, assets, util)
-templates/    plain JS template functions (one HTML string each)
-assets/       styles.css, modal.js, favicon — copied verbatim to dist/
-blog/         blog entries (yours are gitignored; example-* ship)
-projects/     project entries (same)
-build.js      orchestrator:  node build.js
-server.js     minimal static server for dist/
-CLAUDE.md     architecture & conventions (source of truth)
+build/            build logic (collect, parse, render, assets, util)
+templates/        plain JS template functions (one HTML string each)
+assets/           styles.css, modal.js, comments.js, favicon — copied to dist/
+blog/             blog entries (yours are gitignored; example-* ship)
+projects/         project entries (same)
+build.js          orchestrator:  node build.js
+server.js         minimal static server for dist/
+api/              comment API (Node + Postgres) — optional, see Comments
+docker-compose.yml  Postgres + comment API for the optional comments feature
+CLAUDE.md         architecture & conventions (source of truth)
 ```
 
 ## License

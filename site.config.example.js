@@ -57,4 +57,14 @@ module.exports = {
   },
 
   homepage: { maxProjects: 3, maxBlog: 3 },
+
+  // Reader comments on project detail + individual blog pages. Requires the
+  // comment backend (Postgres + Node API) from docker-compose.yml — see
+  // README.md "Comments". Kept OFF in this template so a fresh clone builds and
+  // serves with zero backend; flip `enabled: true` in your own site.config.js
+  // once the containers are up and your reverse proxy routes `apiBase` to them.
+  comments: {
+    enabled: false,
+    apiBase: "/api", // same-origin path your proxy forwards to 127.0.0.1:8138
+  },
 };
