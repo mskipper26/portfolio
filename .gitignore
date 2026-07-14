@@ -1,5 +1,6 @@
 # Dependencies & build output
 node_modules/
+api/node_modules/
 dist/
 
 # Local environment (copy .env.example -> .env). Holds SHOW_EXAMPLES and any

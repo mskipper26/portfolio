@@ -504,3 +504,80 @@ when it's off:
 Anything unset defaults to showing examples. Identification is purely by the
 `example-` slug prefix, which is also what the `.gitignore` negation keys on —
 keep the two in sync if you rename the convention.
+
+---
+
+## 12. Comments (optional backend)
+
+Reader comments live at the **bottom of every project detail page and every
+individual blog page** (standalone posts *and* each series part — one thread per
+page). The static build stays static; comments are the **only stateful feature**
+and are **config-gated off by default** so the public template still builds and
+serves with zero infrastructure.
+
+### Thread identity
+
+A comment thread is keyed by the **page's URL path** — `entry.url` for projects
+(`/projects/<slug>/`) and the per-part `outUrl` for blog
+(`/blog/<slug>/` or `/blog/<slug>/part-<order>/`). These are already computed in
+`build/render.js`, are unique and stable, and mean series parts each get their
+own thread with no schema knowledge of series/parts. Any future page type gets
+comments for free by passing its URL path as `threadId`.
+
+### Architecture
+
+- **Database:** Postgres in a container. One table `comments(id, thread, author
+  VARCHAR(25), body VARCHAR(200), created_at)` — `api/schema.sql`.
+- **API:** `api/server.js` — Node built-in `http` + one dep (`pg`), matching the
+  zero-framework aesthetic of the root `server.js`. Routes `comments`
+  (`GET ?thread=`, `POST`, `DELETE /:id`) + `health`, served with an **optional
+  leading `/api`** — so it works fronted at a same-origin path (`/api/…`) or at
+  the root of a subdomain (`api.example.com/…`) with no proxy path rewrite.
+  **Length limits and
+  the empty-name → `"Anonymous"` default are enforced server-side**; the client
+  `maxlength` attrs are UX only. Delete authorization compares the supplied key
+  to `COMMENT_DELETE_KEY` with `crypto.timingSafeEqual`. All queries are
+  parameterized.
+- **Orchestration:** `docker-compose.yml` runs `db` (no published port) + `api`
+  (published on `127.0.0.1:8138`, loopback only). `pgdata` named volume persists
+  data. Both read secrets from `.env` (see the table below).
+- **Front-end:** `templates/partials/comments.js` emits the section (gated on
+  `site.comments.enabled`) with `data-thread` + `data-api`; `assets/comments.js`
+  (vanilla, same IIFE style as `modal.js`) fetches/renders/posts/deletes.
+  Comment text is rendered with `textContent` (never `innerHTML`), so stored text
+  cannot inject markup — the API stores it raw. On fetch failure the section
+  shows a muted "unavailable" note (graceful degradation when the API is down).
+- **Wiring:** `build/render.js` passes `site` + `threadId` into
+  `project-detail.js` / `blog-post.js` and adds `/assets/comments.js` to the page
+  `scripts` when `site.comments.enabled`.
+
+### Config & deploy
+
+`site.config.js` → `comments: { enabled, apiBase }` (example ships
+`enabled:false`, `apiBase:"/api"`). The static server and the API are **two
+loopback services**. Two front-door options (both need no path rewrite because
+the API accepts an optional `/api` prefix):
+
+- **Same-origin path** (template default): proxy `/api/` → `127.0.0.1:8138`,
+  everything else → static server (`127.0.0.1:8137`). No CORS.
+- **Dedicated subdomain** (this deploy, `api.m-skipper.com` via Cloudflare
+  Tunnel): a public hostname → `127.0.0.1:8138`, **Path blank**. Cross-origin, so
+  set `ALLOW_ORIGIN` to the site origin and `apiBase` to the subdomain URL.
+
+See `README.md` "Comments" for the enable steps and proxy/tunnel snippets.
+
+New `.env` keys (docker-compose reads these; the static build does not):
+
+| Key | Purpose |
+|---|---|
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | DB credentials |
+| `COMMENT_DELETE_KEY` | key a visitor must enter to delete a comment |
+| `API_PORT` | loopback port the API publishes on (default 8138) |
+| `ALLOW_ORIGIN` | optional CORS origin for cross-origin dev; empty in prod |
+
+### Deferred (not built)
+
+Rate-limiting/anti-spam beyond length caps (a honeypot field is a cheap add),
+comment editing, threaded replies, moderation UI, pagination. The single-table
+schema and one-file API leave room for all of these without touching the static
+build.

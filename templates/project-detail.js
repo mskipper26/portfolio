@@ -4,10 +4,12 @@
 const { escapeHtml, formatLongDate } = require("../build/util");
 const thumb = require("./partials/thumb");
 const { projectButtons } = require("./partials/project-card");
+const comments = require("./partials/comments");
 
 /**
  * @param {object} o
  * @param {object} o.entry   collected project entry; parts have {html, anchor, ...}
+ * @param {object} o.site    site.config (for the comments section)
  */
 module.exports = function projectDetail(o) {
   const e = o.entry;
@@ -63,6 +65,7 @@ module.exports = function projectDetail(o) {
         <div class="devlog-body">
           ${body}
         </div>
+        ${comments({ site: o.site, threadId: e.url })}
       </div>
     </main>`;
 };

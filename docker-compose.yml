@@ -1,0 +1,50 @@
+# docker-compose.yml — comment backend for the portfolio.
+#
+# Brings up Postgres + the Node comment API. The static site itself is NOT
+# containerized (it is served by server.js at the repo root); only the comment
+# backend lives here. See CLAUDE.md "Comments" section and README.md.
+#
+#   cp .env.example .env   # then set POSTGRES_PASSWORD + COMMENT_DELETE_KEY
+#   docker compose up -d
+#
+# The API is published on 127.0.0.1:${API_PORT} (loopback only). Point your
+# reverse proxy's /api/ location at it.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-portfolio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-portfolio}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Runs once on first init (empty data dir) to create the schema.
+      - ./api/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-portfolio} -d ${POSTGRES_DB:-portfolio}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # No published port: only the api service reaches it on the compose network.
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      API_PORT: 8138
+      API_HOST: 0.0.0.0
+      DATABASE_URL: postgres://${POSTGRES_USER:-portfolio}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-portfolio}
+      COMMENT_DELETE_KEY: ${COMMENT_DELETE_KEY:?set COMMENT_DELETE_KEY in .env}
+      # Optional: set only for cross-origin dev (leave unset in production).
+      ALLOW_ORIGIN: ${ALLOW_ORIGIN:-}
+    ports:
+      # Loopback only — the site's reverse proxy fronts this at /api/.
+      - "127.0.0.1:${API_PORT:-8138}:8138"
+
+volumes:
+  pgdata:
