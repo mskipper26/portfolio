@@ -537,7 +537,13 @@ comments for free by passing its URL path as `threadId`.
   the empty-name → `"Anonymous"` default are enforced server-side**; the client
   `maxlength` attrs are UX only. Delete authorization compares the supplied key
   to `COMMENT_DELETE_KEY` with `crypto.timingSafeEqual`. All queries are
-  parameterized.
+  parameterized. **Profanity filter:** a blocklist loaded once at startup from
+  `api/banned-words.txt` (override with `BANNED_WORDS_FILE`) — `POST` rejects
+  (`400`) a comment whose author **or** body contains a banned word.
+  `containsBannedWord` matches **whole words only** after lowercasing, undoing
+  common leet substitutions, and collapsing repeated letters, so clean words
+  containing a banned substring (Scunthorpe problem) are not flagged. A missing
+  file disables the filter (logged), so the API still runs.
 - **Orchestration:** `docker-compose.yml` runs `db` (no published port) + `api`
   (published on `127.0.0.1:8138`, loopback only). `pgdata` named volume persists
   data. Both read secrets from `.env` (see the table below).
@@ -547,6 +553,14 @@ comments for free by passing its URL path as `threadId`.
   Comment text is rendered with `textContent` (never `innerHTML`), so stored text
   cannot inject markup — the API stores it raw. On fetch failure the section
   shows a muted "unavailable" note (graceful degradation when the API is down).
+  Each comment renders with an **initial avatar** and a live comment **count** in
+  the heading. **Deleting uses a styled dialog, not `window.prompt`:** the
+  partial emits a `#comment-delete-modal` reusing the shared `.modal*` classes
+  (the same visual treatment as the series modal — see §7); `comments.js` opens
+  it, collects the key, shows an inline error on a wrong key (dialog stays open),
+  and is Esc/overlay-dismissable and focus-trapped. The series modal and the
+  delete modal share one `.modal` base in `styles.css`; `series-modal` keeps only
+  its id/data hooks.
 - **Wiring:** `build/render.js` passes `site` + `threadId` into
   `project-detail.js` / `blog-post.js` and adds `/assets/comments.js` to the page
   `scripts` when `site.comments.enabled`.
@@ -574,10 +588,11 @@ New `.env` keys (docker-compose reads these; the static build does not):
 | `COMMENT_DELETE_KEY` | key a visitor must enter to delete a comment |
 | `API_PORT` | loopback port the API publishes on (default 8138) |
 | `ALLOW_ORIGIN` | optional CORS origin for cross-origin dev; empty in prod |
+| `BANNED_WORDS_FILE` | optional path to the profanity blocklist (default `api/banned-words.txt`, baked into the image) |
 
 ### Deferred (not built)
 
-Rate-limiting/anti-spam beyond length caps (a honeypot field is a cheap add),
-comment editing, threaded replies, moderation UI, pagination. The single-table
-schema and one-file API leave room for all of these without touching the static
-build.
+Rate-limiting (a honeypot field is a cheap add) beyond the length caps and the
+profanity blocklist, comment editing, threaded replies, moderation UI,
+pagination. The single-table schema and one-file API leave room for all of these
+without touching the static build.

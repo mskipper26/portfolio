@@ -19,20 +19,68 @@
 //   API_PORT               listen port (default 8138)
 //   API_HOST               listen host (default 0.0.0.0 inside the container)
 //   ALLOW_ORIGIN           optional CORS origin (unset in prod = same-origin)
+//   BANNED_WORDS_FILE      profanity blocklist (default ./banned-words.txt)
 
 const http = require("http");
 const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
 const { Pool } = require("pg");
 
 const PORT = Number(process.env.API_PORT) || 8138;
 const HOST = process.env.API_HOST || "0.0.0.0";
 const DELETE_KEY = process.env.COMMENT_DELETE_KEY || "";
 const ALLOW_ORIGIN = process.env.ALLOW_ORIGIN || "";
+const BANNED_WORDS_FILE =
+  process.env.BANNED_WORDS_FILE || path.join(__dirname, "banned-words.txt");
 
 const AUTHOR_MAX = 25;
 const BODY_MAX = 200;
 const DEFAULT_AUTHOR = "Anonymous";
 const MAX_BODY_BYTES = 16 * 1024; // request body size cap
+
+// --- profanity filter ------------------------------------------------------
+// Load the blocklist once at startup into a Set of base words. Missing file →
+// filtering is simply disabled (logged), so the API still runs.
+const BANNED_WORDS = loadBannedWords(BANNED_WORDS_FILE);
+
+function loadBannedWords(file) {
+  const set = new Set();
+  try {
+    const raw = fs.readFileSync(file, "utf8");
+    for (const line of raw.split(/\r?\n/)) {
+      const word = line.trim().toLowerCase();
+      if (word && !word.startsWith("#")) set.add(word);
+    }
+    console.log(`comment-api: loaded ${set.size} banned words from ${file}`);
+  } catch (err) {
+    console.warn(`⚠ banned-words file not loaded (${err.message}) — profanity filter disabled.`);
+  }
+  return set;
+}
+
+// Leet → letter map so "sh1t"/"a$$" normalize before matching.
+const LEET = { "0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s" };
+
+/**
+ * True if any word in `text` is on the blocklist. Normalizes each word by
+ * lowercasing, undoing leet substitutions, and collapsing runs of a repeated
+ * letter (so "fuuuck" → "fuck"), then matches whole words only — this keeps the
+ * Scunthorpe problem at bay (substrings of clean words are never flagged).
+ */
+function containsBannedWord(text) {
+  if (!BANNED_WORDS.size || !text) return false;
+  const normalized = String(text)
+    .toLowerCase()
+    .replace(/[013457@$]/g, (ch) => LEET[ch] || ch);
+  for (const token of normalized.split(/[^a-z]+/)) {
+    if (!token) continue;
+    if (BANNED_WORDS.has(token)) return true;
+    const collapsed = token.replace(/(.)\1+/g, "$1"); // "coool" → "col"
+    if (collapsed !== token && BANNED_WORDS.has(collapsed)) return true;
+  }
+  return false;
+}
 
 // `pg` reads DATABASE_URL or the discrete PG* vars from the environment.
 const pool = new Pool(
@@ -157,6 +205,10 @@ async function postComment(req, res) {
     return sendJson(res, 400, { error: `comment exceeds ${BODY_MAX} characters` });
   if (author.length > AUTHOR_MAX)
     return sendJson(res, 400, { error: `name exceeds ${AUTHOR_MAX} characters` });
+  if (containsBannedWord(body) || containsBannedWord(author))
+    return sendJson(res, 400, {
+      error: "Please keep it respectful — that contains language that isn't allowed.",
+    });
   if (!author) author = DEFAULT_AUTHOR; // empty name → Anonymous
 
   const { rows } = await pool.query(

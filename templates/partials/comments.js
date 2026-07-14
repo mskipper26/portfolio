@@ -25,7 +25,7 @@ module.exports = function comments(o) {
         data-thread="${escapeHtml(o.threadId)}"
         data-api="${escapeHtml(apiBase)}"
       >
-        <h2 class="comments__title" id="comments-title">Comments</h2>
+        <h2 class="comments__title" id="comments-title">Comments<span class="comments__count" data-count-label></span></h2>
         <form class="comments__form" novalidate>
           <div class="comments__field">
             <label class="comments__label" for="comment-author">Name <span class="comments__optional">(optional)</span></label>
@@ -58,5 +58,38 @@ module.exports = function comments(o) {
           </div>
         </form>
         <ul class="comments__list" data-list data-empty="No comments yet — be the first."></ul>
+        <div
+          class="modal comment-delete-modal"
+          id="comment-delete-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="comment-delete-title"
+          aria-describedby="comment-delete-desc"
+          hidden
+        >
+          <div class="modal__overlay" data-delete-dismiss></div>
+          <div class="modal__card" role="document">
+            <p class="eyebrow">Moderation</p>
+            <h2 class="modal__title" id="comment-delete-title">Delete this comment?</h2>
+            <p class="modal__desc" id="comment-delete-desc">
+              Enter the delete key to remove this comment. This can't be undone.
+            </p>
+            <div class="modal__field">
+              <label class="comments__label" for="comment-delete-key">Delete key</label>
+              <input
+                class="comments__input"
+                id="comment-delete-key"
+                type="password"
+                autocomplete="off"
+                data-delete-key
+              />
+              <p class="modal__error" data-delete-error hidden></p>
+            </div>
+            <div class="modal__actions">
+              <button type="button" class="btn btn--primary" data-delete-confirm>Delete comment</button>
+              <button type="button" class="btn btn--outline" data-delete-dismiss>Cancel</button>
+            </div>
+          </div>
+        </div>
       </section>`;
 };

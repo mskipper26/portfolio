@@ -95,11 +95,13 @@ node build.js && node server.js
 ## Comments (optional)
 
 Project detail pages and individual blog pages can host a reader comment section
-(name ≤ 25 chars, comment ≤ 200 chars, per-page threads, hover-to-delete with a
-key). It's **off by default** so the template builds with zero backend. Enabling
-it adds a small backend: a **Postgres** database and a **Node comment API**, both
-run via **Docker Compose**. The static site stays static — comments load
-client-side and degrade gracefully to "unavailable" if the API is down.
+(name ≤ 25 chars, comment ≤ 200 chars, per-page threads, hover-to-delete via a
+styled key dialog). It's **off by default** so the template builds with zero
+backend. Enabling it adds a small backend: a **Postgres** database and a **Node
+comment API**, both run via **Docker Compose**. The static site stays static —
+comments load client-side and degrade gracefully to "unavailable" if the API is
+down. Submissions are screened server-side against a profanity blocklist
+(`api/banned-words.txt` — edit it and `docker compose restart api` to adjust).
 
 **1. Configure secrets** (in your gitignored `.env`):
 

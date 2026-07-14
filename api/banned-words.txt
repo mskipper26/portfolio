@@ -1,0 +1,73 @@
+# banned-words.txt — profanity / slur blocklist for the comment API.
+#
+# One entry per line. Blank lines and lines starting with `#` are ignored.
+# Matching is case-insensitive and word-based (see server.js `containsBannedWord`):
+# a comment is rejected when any of its whitespace/punctuation-delimited words
+# equals an entry here, after lowercasing, collapsing repeated letters, and
+# undoing common leet substitutions (0→o, 1→i, 3→e, 4→a, 5→s, 7→t, @→a, $→s).
+# Keep entries as the base word (no leet, no repeats); the matcher normalizes.
+#
+# This is a deliberately compact, general-purpose list. Extend it for your own
+# audience — it is read on API startup, so restart the api container after edits
+# (`docker compose restart api`). Point BANNED_WORDS_FILE at a different file to
+# swap the list without rebuilding the image.
+
+anal
+anus
+arse
+arsehole
+ass
+asshole
+bastard
+bitch
+bollocks
+boner
+boob
+bugger
+bullshit
+clit
+cock
+coon
+crap
+cum
+cunt
+damn
+dick
+dildo
+dyke
+fag
+faggot
+fuck
+fucker
+fucking
+goddamn
+handjob
+hell
+homo
+jerkoff
+jizz
+kike
+motherfucker
+nigga
+nigger
+nutsack
+paki
+piss
+prick
+pussy
+queer
+retard
+retarded
+scrotum
+shit
+shitty
+slut
+spastic
+spic
+tit
+tits
+turd
+twat
+wank
+wanker
+whore

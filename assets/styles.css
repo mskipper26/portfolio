@@ -813,12 +813,12 @@ p {
   font-weight: 700;
 }
 
-/* --- series modal ------------------------------------------------------ */
+/* --- modal (shared: series "start over" + comment delete) -------------- */
 
-.series-modal[hidden] {
+.modal[hidden] {
   display: none;
 }
-.series-modal {
+.modal {
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -827,13 +827,13 @@ p {
   justify-content: center;
   padding: 20px;
 }
-.series-modal__overlay {
+.modal__overlay {
   position: absolute;
   inset: 0;
   background: rgba(35, 32, 27, 0.5);
   backdrop-filter: blur(2px);
 }
-.series-modal__card {
+.modal__card {
   position: relative;
   background: var(--bg);
   border-radius: 14px;
@@ -849,18 +849,27 @@ p {
     transform: translateY(8px) scale(0.98);
   }
 }
-.series-modal__title {
+.modal__title {
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.02em;
   margin: 12px 0 10px;
 }
-.series-modal__desc {
+.modal__desc {
   color: var(--ink-68);
   font-size: 16px;
   line-height: 1.6;
 }
-.series-modal__actions {
+.modal__field {
+  margin-top: 18px;
+}
+.modal__error {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.modal__actions {
   display: flex;
   gap: 12px;
   margin-top: 24px;
@@ -880,10 +889,18 @@ p {
   letter-spacing: -0.01em;
   margin: 0 0 20px;
 }
+.comments__count {
+  color: var(--ink-45);
+  font-weight: 400;
+}
 
 /* form */
 .comments__form {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
+  padding: 22px 22px 20px;
+  background: var(--bg-alt);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
 }
 .comments__field {
   margin-bottom: 14px;
@@ -905,10 +922,11 @@ p {
   font-family: var(--font);
   font-size: 15px;
   color: var(--ink);
-  background: var(--bg-alt);
+  background: var(--bg);
   border: 1px solid var(--rule);
   border-radius: var(--radius-card);
   padding: 10px 14px;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 .comments__input {
   max-width: 320px;
@@ -922,6 +940,7 @@ p {
 .comments__textarea:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(193, 97, 63, 0.12);
 }
 .comments__counter {
   margin: 6px 0 0;
@@ -960,11 +979,31 @@ p {
 }
 .comments__item {
   position: relative;
-  padding: 16px 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  padding: 18px 0;
   border-top: 1px solid var(--rule);
 }
 .comments__item:first-child {
   border-top: none;
+}
+.comments__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--tag-bg);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex: none;
+  user-select: none;
+}
+.comments__item-main {
+  min-width: 0;
 }
 .comments__item-head {
   display: flex;
@@ -990,16 +1029,18 @@ p {
 }
 .comments__delete {
   margin-left: auto;
-  font: inherit;
-  font-size: 12px;
-  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-45);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 4px;
+  line-height: 0;
   border-radius: var(--radius-pill);
   opacity: 0;
-  transition: opacity 0.12s ease;
+  transition: opacity 0.12s ease, color 0.12s ease, background 0.12s ease;
 }
 .comments__item:hover .comments__delete,
 .comments__item:focus-within .comments__delete,
@@ -1007,8 +1048,12 @@ p {
   opacity: 1;
 }
 .comments__delete:hover {
-  color: var(--accent-hover);
-  text-decoration: underline;
+  color: var(--accent);
+  background: var(--tag-bg);
+}
+.comments__delete:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 .comments__note {
   color: var(--ink-45);
