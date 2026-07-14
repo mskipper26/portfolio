@@ -107,5 +107,4 @@ CLAUDE.md     architecture & conventions (source of truth)
 
 ## License
 
-No license file is included. Add one before publishing if you want others to
-reuse it.
+[MIT](LICENSE)
