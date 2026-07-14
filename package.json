@@ -1,0 +1,17 @@
+{
+  "name": "portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static personal portfolio template — Markdown content, custom Node build, no framework.",
+  "scripts": {
+    "build": "node build.js",
+    "start": "node server.js",
+    "serve": "node build.js && node -e \"const h=require('http'),fs=require('fs'),p=require('path');const root=p.join(process.cwd(),'dist');h.createServer((req,res)=>{let u=decodeURIComponent(req.url.split('?')[0]);let f=p.join(root,u);try{if(fs.statSync(f).isDirectory())f=p.join(f,'index.html');}catch(e){}fs.readFile(f,(e,d)=>{if(e){res.statusCode=404;res.end('404');return;}const t={'.html':'text/html','.css':'text/css','.js':'text/javascript','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml'}[p.extname(f)]||'application/octet-stream';res.setHeader('content-type',t);res.end(d);});}).listen(8080,()=>console.log('serving dist/ at http://localhost:8080'));\""
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.2.0",
+    "markdown-it-highlightjs": "^4.2.0"
+  }
+}

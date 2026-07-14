@@ -1,0 +1,25 @@
+[Unit]
+# Example systemd *user* unit for serving the built dist/ directory.
+# Copy to ~/.config/systemd/user/portfolio.service and edit the paths below.
+Description=Portfolio static server
+After=network.target
+
+[Service]
+Type=simple
+# --- Edit these for your machine -------------------------------------------
+# Absolute path to your checkout:
+WorkingDirectory=/home/YOUR_USER/portfolio
+Environment=PORT=8137
+Environment=HOST=127.0.0.1
+# Set SHOW_EXAMPLES=false to hide the shipped example content on your live site.
+Environment=SHOW_EXAMPLES=false
+# Absolute node path — systemd does not source nvm. If you use nvm, find it with:
+#   readlink -f "$(nvm which current)"
+# Otherwise use `which node` (often /usr/bin/node or /usr/local/bin/node).
+ExecStart=/usr/bin/node /home/YOUR_USER/portfolio/server.js
+# ---------------------------------------------------------------------------
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

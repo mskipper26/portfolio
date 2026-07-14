@@ -1,0 +1,33 @@
+# Dependencies & build output
+node_modules/
+dist/
+
+# Local environment (copy .env.example -> .env). Holds SHOW_EXAMPLES and any
+# other machine-specific settings.
+.env
+
+# --- Private content -------------------------------------------------------
+# Your authored posts and projects stay OUT of version control. Everything
+# under blog/ and projects/ is ignored EXCEPT the example-* entries that ship
+# with the template as a working demo.
+/blog/*
+!/blog/example-*/
+/projects/*
+!/projects/example-*/
+
+# --- Private site files (copy the .example versions to start) --------------
+# Your real config, About page, and portrait are ignored; the committed
+# *.example.* files are the public template the build falls back to.
+/site.config.js
+/about.md
+/assets/portrait.jpg
+
+# Personal working notes (the committed template ships PROGRESS.md.example)
+/PROGRESS.md
+
+# Reference-only design bundles (not part of the shipped template)
+/_reference/
+
+# Editor / OS cruft
+.DS_Store
+*.swp

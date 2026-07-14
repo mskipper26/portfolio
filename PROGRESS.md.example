@@ -1,0 +1,59 @@
+# PROGRESS.md
+
+Status / changelog for your portfolio. See `CLAUDE.md` for the full architecture
+and `README.md` for setup. Copy this file to `PROGRESS.md` (gitignored) and keep
+your own notes here.
+
+---
+
+## Legend
+- ✅ done · 🔲 not started · 🚧 in progress
+
+## What the template ships
+
+- ✅ **Build pipeline** (`node build.js`): collect → parse (markdown-it +
+  anchors + build-time syntax highlighting) → render → copy assets → write
+  `dist/`. Deps kept minimal: `markdown-it` (+ `markdown-it-anchor`,
+  `markdown-it-highlightjs`) and `gray-matter`.
+- ✅ **Design system** in `assets/styles.css`: warm cream-and-terracotta tokens,
+  nav, hero, buttons, tags, cards, prose, code theme, series modal, footer,
+  responsive layout. OpenGraph/canonical meta wired in `templates/layout.js`.
+- ✅ **Pages**: Home (featured projects + recent blog), Projects index (one card
+  per project), Blog index (each part listed individually, interleaved by date),
+  About (rendered from `about.md`).
+- ✅ **Detail templates**: project devlog (single page, parts timeline + anchors)
+  and blog post (article + series nav). **Series modal** fires only on a blog
+  series part with `order > 1`.
+- ✅ **Content model**: entry = a directory; 1 markdown file = standalone,
+  ≥2 = a series. Frontmatter validated with clear, file-named errors. `visible`
+  flag hides entries.
+- ✅ **Public-template plumbing**: `.example` fallbacks for `site.config.js` /
+  `about.md` / `.env`, and the `SHOW_EXAMPLES` flag gating `example-*` demo
+  content (see `CLAUDE.md` §11).
+
+## Your changes
+
+- 🔲 Fill in `site.config.js` (name, domain, email, socials).
+- 🔲 Write `about.md` and add `assets/portrait.jpg` (optional).
+- 🔲 Replace the example content with your own posts/projects; set
+  `SHOW_EXAMPLES=false` in `.env` once you have real content.
+- 🔲 …
+
+## Running the server
+
+A minimal zero-dependency `server.js` serves `dist/` (default `127.0.0.1:8137`,
+configurable via `PORT`/`HOST`). Put it behind your reverse proxy or tunnel.
+
+**After adding/editing content — rebuild, then restart your server:**
+```
+node build.js && systemctl --user restart portfolio.service
+```
+
+An example systemd **user** unit is provided at `deploy/portfolio.service` —
+copy it to `~/.config/systemd/user/`, edit the paths, then:
+```
+systemctl --user daemon-reload && systemctl --user enable --now portfolio.service
+```
+
+## Deferred (see CLAUDE.md §10)
+- 🔲 RSS/sitemap · tag filtering · search · dark mode · watch mode.
