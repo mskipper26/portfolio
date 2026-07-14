@@ -192,7 +192,11 @@ literals). No template language / no Handlebars — full control, zero magic,
 matches the "custom script" decision. If nesting gets painful later, a tiny lib
 like `eta` is an acceptable upgrade, but start with functions. **Always
 HTML-escape interpolated frontmatter text** (titles, descriptions) except the
-already-sanitized markdown body.
+markdown body. The body is trusted author-authored content: `markdown-it` runs
+with `html: true`, so raw HTML (including inline `<script>` for small
+interactive elements) passes through verbatim and is injected unescaped. There
+is no user-generated content in this static build, so this is intentional — do
+not re-enable HTML escaping on the body.
 
 ---
 
@@ -401,8 +405,9 @@ highlighter. Bundle the highlight theme into `styles.css`, tuned to the palette.
    dir read every `.md`, parse frontmatter+body with `gray-matter`, validate
    required fields (fail loudly with the offending file path), sort parts by
    `order`, compute the entry `updated` date, resolve the preview `image` path.
-3. **Render markdown** (`build/parse.js`): `markdown-it` (+ anchor + highlighter)
-   → sanitized HTML body per part.
+3. **Render markdown** (`build/parse.js`): `markdown-it` (+ anchor + highlighter,
+   `html: true`) → HTML body per part. Raw HTML in the source (including
+   `<script>`) passes through verbatim; content is author-trusted (§3).
 4. **Build content model**: `{ projects: [...], blog: [...] }` with everything the
    templates need (slugs, urls, sorted parts, updated, preview data).
 5. **Render pages** (`build/render.js` + `templates/`): home, projects index +

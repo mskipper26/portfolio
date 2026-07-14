@@ -5,6 +5,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); this project does
 not yet follow strict semantic versioning guarantees, but version numbers are
 tagged for reference.
 
+## [1.0.1] - 2026-07-14
+
+### Changed
+- Markdown rendering now allows raw HTML (`markdown-it` `html: true`), so
+  entries can embed HTML and inline `<script>` for small interactive elements.
+
 ## [1.0.0] - 2026-07-14
 
 Initial public release of the portfolio template.

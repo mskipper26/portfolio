@@ -9,7 +9,7 @@ const highlightjs = require("markdown-it-highlightjs");
 const { slugify } = require("./util");
 
 const md = new MarkdownIt({
-  html: false, // do NOT allow raw HTML in authored markdown (safe by default)
+  html: true, // allow raw HTML in authored markdown (content is author-trusted)
   linkify: true,
   typographer: true,
 })
