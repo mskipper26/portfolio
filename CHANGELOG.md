@@ -5,6 +5,16 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); this project does
 not yet follow strict semantic versioning guarantees, but version numbers are
 tagged for reference.
 
+## [1.1.2] - 2026-07-15
+
+### Changed
+- **Inline code spans are now plain monospace text.** `` `code` `` was previously
+  run through highlight.js and rendered on a tinted background in terracotta,
+  which was hard to read against the cream page. Inline spans now render as
+  unhighlighted `--ink` text with no background or padding, inheriting surrounding
+  weight so bold is preserved. Fenced code blocks are unaffected and still
+  highlight against the dark block background.
+
 ## [1.1.1] - 2026-07-15
 
 ### Changed

@@ -13,7 +13,9 @@ const md = new MarkdownIt({
   linkify: true,
   typographer: true,
 })
-  .use(highlightjs, { inline: true, auto: true })
+  // inline:false — `code spans` stay plain monospace text (see styles.css);
+  // highlighting applies to fenced blocks only.
+  .use(highlightjs, { inline: false, auto: true })
   .use(anchor, {
     slugify: (s) => slugify(s),
     permalink: anchor.permalink.headerLink({ safariReaderFix: true }),
