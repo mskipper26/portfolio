@@ -5,6 +5,17 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); this project does
 not yet follow strict semantic versioning guarantees, but version numbers are
 tagged for reference.
 
+## [1.1.1] - 2026-07-15
+
+### Changed
+- **Preview and header images now show in full instead of being cropped.** The
+  home project-row thumbnail, projects-index card image, and detail-page header
+  image previously used `object-fit: cover` inside fixed-aspect boxes, cropping
+  anything that didn't fit. Cards and headers now display images at their natural
+  aspect ratio, centered and bounded by a max height; the compact home-row
+  thumbnail keeps its fixed slot but uses `contain` with a subtle fill so the
+  whole image is visible.
+
 ## [1.1.0] - 2026-07-14
 
 ### Added
